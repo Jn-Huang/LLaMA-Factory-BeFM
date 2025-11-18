@@ -1,0 +1,11 @@
+### model
+model_name_or_path: saves/qwen3-4b/full/sft  # Path to your full fine-tuned model
+trust_remote_code: true
+template: qwen3_nothink
+
+### Inference settings
+infer_backend: huggingface  # choices: [huggingface, vllm]
+# For vLLM backend (faster inference):
+# infer_backend: vllm
+# vllm_enforce_eager: true
+# vllm_maxlen: 2048

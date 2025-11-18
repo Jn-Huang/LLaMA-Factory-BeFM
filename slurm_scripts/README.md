@@ -4,8 +4,17 @@ This directory contains SLURM scripts for training models using LLaMA-Factory on
 
 ## Files
 
-- `train_qwen3_4b.sh` - SLURM batch script for training Qwen3-4B-Instruct-2507
-- `qwen3_4b_lora_sft.yaml` - Training configuration for LoRA fine-tuning
+### Training Scripts
+- `train_qwen3_4b.sh` - SLURM script for LoRA fine-tuning (1 GPU, ~12-16GB memory)
+- `train_qwen3_4b_full.sh` - SLURM script for full parameter fine-tuning (4 GPUs, DeepSpeed ZeRO-3)
+
+### Training Configurations
+- `qwen3_4b_lora_sft.yaml` - LoRA fine-tuning configuration
+- `qwen3_4b_full_sft.yaml` - Full parameter fine-tuning configuration
+
+### Inference & Export
+- `qwen3_4b_inference.yaml` - Inference configuration (chat/API)
+- `qwen3_4b_merge.yaml` - LoRA adapter merge configuration
 
 ## Setup Instructions
 
@@ -110,18 +119,71 @@ scancel <job_id>
 
 ## Training Configurations
 
-### LoRA Fine-Tuning (Default)
-- **Memory**: ~12-16GB GPU memory
+### Quick Comparison
+
+| Feature | LoRA Fine-Tuning | Full Parameter Fine-Tuning |
+|---------|------------------|----------------------------|
+| **GPUs Required** | 1 GPU | 4+ GPUs |
+| **GPU Memory** | ~12-16GB | ~80-120GB (distributed) |
+| **Training Speed** | Fast | Slower |
+| **Parameters Updated** | ~0.1-1% (adapters) | 100% (all weights) |
+| **Checkpoint Size** | ~10-50MB | ~8GB |
+| **Performance** | Good | Best |
+| **Use Case** | General fine-tuning | Domain adaptation, max performance |
+| **Recommended For** | Most users | Advanced users, specific domains |
+
+### LoRA Fine-Tuning (Recommended)
+- **Memory**: ~12-16GB GPU memory per device
+- **GPUs**: 1 GPU
 - **Speed**: Fast, efficient
-- **Use case**: Most common scenario
+- **Use case**: Most common scenario, parameter-efficient
+- **Script**: `train_qwen3_4b.sh`
 - **Config**: `qwen3_4b_lora_sft.yaml`
 
-### Full Fine-Tuning
-Create a new config with:
-```yaml
-finetuning_type: full
+**Submit:**
+```bash
+sbatch slurm_scripts/train_qwen3_4b.sh
 ```
-Note: Requires more GPU memory (~32GB+)
+
+**Pros:**
+- Lower memory requirements
+- Faster training
+- Easy to merge or switch adapters
+- Good performance for most tasks
+
+**Cons:**
+- Slightly lower performance than full fine-tuning
+- Limited to adapter parameters (~0.1-1% of model)
+
+### Full Parameter Fine-Tuning
+- **Memory**: ~80-120GB total (distributed across GPUs)
+- **GPUs**: 4 GPUs minimum (uses DeepSpeed ZeRO-3)
+- **Speed**: Slower than LoRA
+- **Use case**: Maximum performance, domain adaptation
+- **Script**: `train_qwen3_4b_full.sh`
+- **Config**: `qwen3_4b_full_sft.yaml`
+
+**Submit:**
+```bash
+sbatch slurm_scripts/train_qwen3_4b_full.sh
+```
+
+**Pros:**
+- Maximum performance
+- All parameters updated
+- Better for significant domain shift
+
+**Cons:**
+- Higher memory requirements
+- Longer training time
+- Requires multiple GPUs
+- Larger checkpoint size
+
+**Important Notes:**
+- Uses DeepSpeed ZeRO-3 for memory efficiency
+- Requires `FORCE_TORCHRUN=1` for distributed training
+- Lower learning rate (1e-5 vs 5e-5 for LoRA)
+- Ensure DeepSpeed is installed: `pip install deepspeed`
 
 ### Multi-GPU Training
 
@@ -155,33 +217,75 @@ deepspeed: examples/deepspeed/ds_z3_config.json
 
 ## Output Files
 
-After training, you'll find:
+### LoRA Fine-Tuning Output
+After LoRA training, you'll find:
 
 ```
 saves/qwen3-4b/lora/sft/
 ├── adapter_config.json      # LoRA adapter configuration
-├── adapter_model.safetensors # Trained LoRA weights
+├── adapter_model.safetensors # Trained LoRA weights (~10-50MB)
 ├── trainer_state.json        # Training state
 ├── training_args.bin         # Training arguments
 ├── training_loss.png         # Loss plot (if plot_loss: true)
 └── all_results.json         # Final metrics
 ```
 
+### Full Fine-Tuning Output
+After full parameter training, you'll find:
+
+```
+saves/qwen3-4b/full/sft/
+├── model-00001-of-00002.safetensors  # Model weights (sharded)
+├── model-00002-of-00002.safetensors
+├── model.safetensors.index.json     # Shard index
+├── config.json                       # Model configuration
+├── generation_config.json
+├── trainer_state.json                # Training state
+├── training_args.bin                 # Training arguments
+├── training_loss.png                 # Loss plot (if plot_loss: true)
+└── all_results.json                 # Final metrics
+```
+
 ## Inference After Training
 
-### Option 1: CLI Chat
+### Using LoRA Fine-Tuned Model
+
+**Option 1: CLI Chat**
 ```bash
 llamafactory-cli chat slurm_scripts/qwen3_4b_inference.yaml
 ```
 
-### Option 2: Web UI
+**Option 2: Web UI**
 ```bash
 llamafactory-cli webchat slurm_scripts/qwen3_4b_inference.yaml
 ```
 
-### Option 3: Merge LoRA and Export
+**Option 3: Merge LoRA and Export**
 ```bash
 llamafactory-cli export slurm_scripts/qwen3_4b_merge.yaml
+```
+
+### Using Full Fine-Tuned Model
+
+Create an inference config file:
+```yaml
+# qwen3_4b_full_inference.yaml
+model_name_or_path: saves/qwen3-4b/full/sft  # Path to full fine-tuned model
+trust_remote_code: true
+template: qwen3_nothink
+infer_backend: huggingface  # or vllm for faster inference
+```
+
+Then run:
+```bash
+# CLI Chat
+llamafactory-cli chat qwen3_4b_full_inference.yaml
+
+# Web UI
+llamafactory-cli webchat qwen3_4b_full_inference.yaml
+
+# API Server
+llamafactory-cli api qwen3_4b_full_inference.yaml
 ```
 
 ## Troubleshooting
