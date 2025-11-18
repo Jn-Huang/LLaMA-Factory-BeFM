@@ -46,10 +46,6 @@ echo "Number of GPUs:"
 python -c "import torch; print(torch.cuda.device_count())"
 echo "=========================================="
 
-# Set W&B API key for logging - UPDATE THIS with your key
-export WANDB_API_KEY="your_wandb_api_key_here"
-echo "W&B logging enabled"
-
 # Run training with YAML config
 # FORCE_TORCHRUN=1 is required for multi-GPU training
 echo "Starting LoRA training with 2 GPUs..."
