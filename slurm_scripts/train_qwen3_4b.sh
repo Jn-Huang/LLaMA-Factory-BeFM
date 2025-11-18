@@ -12,8 +12,8 @@
 #SBATCH --mail-user=huangjin@umich.edu
 #SBATCH --mail-type=END,FAIL
 
-# Project directory - UPDATE THIS PATH
-PROJECT_DIR=/home/user/LLaMA-Factory-BeFM
+# Project directory
+PROJECT_DIR=/home/huangjin/LLaMA-Factory-BeFM
 
 echo "=========================================="
 echo "Job started at: $(date)"
