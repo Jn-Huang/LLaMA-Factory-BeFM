@@ -4,8 +4,8 @@
 #SBATCH --gres=gpu:4
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=32
-#SBATCH --mem=512G
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=48G
 #SBATCH --time=48:00:00
 #SBATCH --job-name=qwen3_4b_full
 #SBATCH --output=/home/huangjin/logs/qwen3_4b_full_%x-%A-%j.log

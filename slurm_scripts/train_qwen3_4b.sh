@@ -5,7 +5,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
-#SBATCH --mem=128G
+#SBATCH --mem=48G
 #SBATCH --time=24:00:00
 #SBATCH --job-name=qwen3_4b_sft
 #SBATCH --output=/home/huangjin/logs/qwen3_4b_%x-%A-%j.log
