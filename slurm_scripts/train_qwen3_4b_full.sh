@@ -13,7 +13,7 @@
 #SBATCH --mail-type=END,FAIL
 
 # Project directory - UPDATE THIS PATH
-PROJECT_DIR=/home/user/LLaMA-Factory-BeFM
+PROJECT_DIR=/home/huangjin/LLaMA-Factory-BeFM
 
 echo "=========================================="
 echo "Job started at: $(date)"

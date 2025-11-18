@@ -1,14 +1,14 @@
 #!/bin/bash
 #SBATCH --account=qmei
 #SBATCH --partition=qmei-a100
-#SBATCH --gres=gpu:1
+#SBATCH --gres=gpu:2
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=48G
 #SBATCH --time=24:00:00
-#SBATCH --job-name=qwen3_4b_sft
-#SBATCH --output=/home/huangjin/logs/qwen3_4b_%x-%A-%j.log
+#SBATCH --job-name=qwen3_4b_sft_2gpu
+#SBATCH --output=/home/huangjin/logs/qwen3_4b_2gpu_%x-%A-%j.log
 #SBATCH --mail-user=huangjin@umich.edu
 #SBATCH --mail-type=END,FAIL
 
@@ -42,11 +42,14 @@ echo "PyTorch version:"
 python -c "import torch; print(torch.__version__)"
 echo "CUDA available:"
 python -c "import torch; print(torch.cuda.is_available())"
+echo "Number of GPUs:"
+python -c "import torch; print(torch.cuda.device_count())"
 echo "=========================================="
 
 # Run training with YAML config
-echo "Starting training..."
-llamafactory-cli train slurm_scripts/qwen3_4b_lora_sft.yaml
+# FORCE_TORCHRUN=1 is required for multi-GPU training
+echo "Starting LoRA training with 2 GPUs..."
+FORCE_TORCHRUN=1 llamafactory-cli train slurm_scripts/qwen3_4b_lora_sft.yaml
 
 # Check exit status
 if [ $? -eq 0 ]; then
