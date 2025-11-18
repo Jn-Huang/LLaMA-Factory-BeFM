@@ -48,6 +48,10 @@ echo "Number of GPUs:"
 python -c "import torch; print(torch.cuda.device_count())"
 echo "=========================================="
 
+# Set W&B API key for logging - UPDATE THIS with your key
+export WANDB_API_KEY="your_wandb_api_key_here"
+echo "W&B logging enabled"
+
 # Step 1: Run LoRA fine-tuning
 echo "Step 1: Starting LoRA fine-tuning..."
 llamafactory-cli train examples/train_lora/llama3_lora_sft.yaml

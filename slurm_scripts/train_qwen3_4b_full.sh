@@ -48,6 +48,10 @@ echo "DeepSpeed installed:"
 python -c "import deepspeed; print(deepspeed.__version__)" || echo "DeepSpeed not found!"
 echo "=========================================="
 
+# Set W&B API key for logging - UPDATE THIS with your key
+export WANDB_API_KEY="your_wandb_api_key_here"
+echo "W&B logging enabled"
+
 # Run training with YAML config using DeepSpeed
 # FORCE_TORCHRUN=1 is required for multi-GPU full parameter training
 echo "Starting full parameter fine-tuning with DeepSpeed ZeRO-3..."

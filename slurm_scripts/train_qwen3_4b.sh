@@ -44,6 +44,10 @@ echo "CUDA available:"
 python -c "import torch; print(torch.cuda.is_available())"
 echo "=========================================="
 
+# Set W&B API key for logging - UPDATE THIS with your key
+export WANDB_API_KEY="your_wandb_api_key_here"
+echo "W&B logging enabled"
+
 # Run training with YAML config
 echo "Starting training..."
 llamafactory-cli train slurm_scripts/qwen3_4b_lora_sft.yaml
