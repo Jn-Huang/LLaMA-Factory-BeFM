@@ -1,0 +1,11 @@
+### model
+model_name_or_path: Qwen/Qwen3-4B-Instruct-2507
+adapter_name_or_path: saves/qwen3-4b/lora/sft  # Path to your trained LoRA adapter
+trust_remote_code: true
+template: qwen3_nothink
+
+### export
+export_dir: models/qwen3-4b-merged  # Output directory for merged model
+export_size: 2  # Max shard size in GB
+export_device: auto
+export_legacy_format: false
